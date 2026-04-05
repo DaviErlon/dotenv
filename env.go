@@ -14,11 +14,15 @@ var (
 	buffer    = make(map[string]string)
 	errGlobal error
 	mu        sync.RWMutex
+	env_path  = ".env"
 )
 
 // init carrega automaticamente o .env
 func init() {
-	errGlobal = loadFile(".env")
+	mu.Lock()
+	defer mu.Unlock()
+
+	errGlobal = loadFile(env_path)
 }
 
 // Load permite carregar manualmente outro arquivo
@@ -28,12 +32,15 @@ func Load(path string) error {
 
 	buffer = make(map[string]string)
 	errGlobal = loadFile(path)
+	if errGlobal == nil {
+		env_path = path
+	}
 	return errGlobal
 }
 
-// Reload recarrega o .env padrão
+// Reload recarrega o ultimo .env carregado com sucesso
 func Reload() error {
-	return Load(".env")
+	return Load(env_path)
 }
 
 // função interna de leitura
